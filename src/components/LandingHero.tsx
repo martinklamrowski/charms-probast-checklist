@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import Link from "next/link";
 import React, { ReactNode } from "react";
 
 
 interface LandingHeroProps {
   children: ReactNode;
-  signIn: () => Promise<void>;
+  signIn: () => void;
 }
 
 const LandingHero: React.FC<LandingHeroProps> = ({

@@ -6,13 +6,14 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  // provider  = "postgresql"
+  provider = "sqlite"
   // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
   // Further reading:
   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 model Example {
@@ -28,12 +29,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String? //@db.Text
+  access_token      String? //@db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String? //@db.Text
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -49,35 +50,56 @@ model Session {
 }
 
 model Project {
-  id        String    @id @default(cuid())
-  name      String
-  ownerId   String
-  owner     User      @relation(fields: [ownerId], references: [id])
-  members   User[]    @relation("ProjectMembers")
-  articles  Article[]
-  createdAt DateTime  @default(now())
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  charms      Boolean
+  probast     Boolean
+  tripod      Boolean
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id])
+  members     User[]    @relation("ProjectMembers")
+  articles    Article[]
+  createdAt   DateTime  @default(now())
 }
 
 model Article {
-  id        String  @id @default(cuid())
-  title     String
-  content   String?
+  id           String  @id @default(cuid())
+  title        String
+  author       String
+  year         String
+  doi          String?
+  content      String?
+
+  // Foreign keys for User references
+  uploadedById String?
+  reviewedById String?
+
+  // Relations to User
+  uploadedBy   User? @relation("UploadedArticles", fields: [uploadedById], references: [id])
+  reviewedBy   User? @relation("ReviewedArticles", fields: [reviewedById], references: [id])
+
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 }
 
+
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  credits       Int       @default(5)
-  accounts      Account[]
-  sessions      Session[]
-  icons         Icon[]
-  memberProjects Project[] @relation("ProjectMembers") // Projects the user is a member of
-  ownedProjects  Project[] // Projects the user owns
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  credits        Int       @default(5)
+  accounts       Account[]
+  sessions       Session[]
+  icons          Icon[]
+  memberProjects Project[] @relation("ProjectMembers")
+  ownedProjects  Project[]
+
+  // Back-references to Article
+  uploadedArticles  Article[] @relation("UploadedArticles")
+  reviewedArticles  Article[] @relation("ReviewedArticles")
 }
 
 model Icon {

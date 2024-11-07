@@ -53,10 +53,15 @@ export const projectsRouter = createTRPCRouter({
 
   createProject: protectedProcedure.input(
     z.object({
-      name: z.string()
+      name: z.string(),
+      description: z.string(),
+      createdAt: z.date(),
+      charms: z.boolean(),
+      probast: z.boolean(),
+      tripod: z.boolean(),
+      memberEmails: z.array(z.string()).optional()
     })
   ).mutation(async ({ ctx, input }) => {
-    // Type check to ensure session and user are present
     if (!ctx.session?.user?.id) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
@@ -64,13 +69,29 @@ export const projectsRouter = createTRPCRouter({
     const userId = ctx.session.user.id;
 
     try {
-      // Create a new project with the provided name and set the current user as the owner
+      // Look up users by email and gather their IDs
+      const members = await ctx.prisma.user.findMany({
+        where: {
+          email: { in: input.memberEmails },
+        },
+        select: { id: true },
+      });
+
+      // Create the project with members
       const newProject = await ctx.prisma.project.create({
         data: {
           name: input.name,
+          description: input.description,
+          createdAt: new Date(input.createdAt),
           ownerId: userId,
+          charms: input.charms,
+          probast: input.probast,
+          tripod: input.tripod,
           members: {
-            connect: { id: userId }, // Add the owner as an initial member
+            connect: [
+              { id: userId }, // Connect the creator as a member
+              ...members.map((member) => ({ id: member.id })), // Connect other members
+            ],
           },
         },
       });
@@ -78,7 +99,10 @@ export const projectsRouter = createTRPCRouter({
       return newProject;
     } catch (error) {
       console.error("Failed to create project:", error);
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create project" });
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create project",
+      });
     }
   }),
 });
