@@ -5,7 +5,10 @@ import { z } from "zod";
  * built with invalid env vars.
  */
 const server = z.object({
-  DATABASE_URL: z.string().url(),
+  // DATABASE_URL: z.string().url(), # JS's URL does not like the sqlserver:// format
+  HOST_NAME: z.string(),
+  DATABASE_URL: z.string(),
+
   NODE_ENV: z.enum(["development", "test", "production"]),
   NEXTAUTH_SECRET:
     process.env.NODE_ENV === "production"
@@ -19,8 +22,15 @@ const server = z.object({
     process.env.VERCEL ? z.string().min(1) : z.string().url(),
   ),
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
-  DISCORD_CLIENT_ID: z.string(),
-  DISCORD_CLIENT_SECRET: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  OPENAI_API_KEY: z.string(),
+  MOCK_OPENAI: z.string(),
+  AWS_SECRET_ACCESS_KEY: z.string(),
+  AWS_ACCESS_KEY_ID: z.string(),
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_WEB_HOOK_SECRET: z.string(),
+  PRICE_ID: z.string()
 });
 
 /**
@@ -28,6 +38,7 @@ const server = z.object({
  * built with invalid env vars. To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 const client = z.object({
+  NEXT_PUBLIC_STRIPE_KEY: z.string()
   // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
 });
 
@@ -38,12 +49,25 @@ const client = z.object({
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
 const processEnv = {
+  // DATABASE_URL: process.env.DATABASE_URL,
+  HOST_NAME: process.env.HOST_NAME,
   DATABASE_URL: process.env.DATABASE_URL,
+
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  MOCK_OPENAI: process.env.MOCK_OPENAI,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+
+  // REMEMBER THE ONLY WAY TO HAVE THESE PUBLIC KEYS SHOW UP IN THE FRONT END, IS TO PREFIX THEM WITH NEXT_PUBLIC
+  NEXT_PUBLIC_STRIPE_KEY: process.env.NEXT_PUBLIC_STRIPE_KEY,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEB_HOOK_SECRET: process.env.STRIPE_WEB_HOOK_SECRET,
+  PRICE_ID: process.env.PRICE_ID
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 };
 

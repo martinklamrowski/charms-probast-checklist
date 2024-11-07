@@ -10,6 +10,13 @@
 const config = {
   reactStrictMode: true,
 
+  images: {
+    domains: [
+      "oaidalleapiprodscus.blob.core.windows.net",
+      "prediction-model-checklists.s3.amazonaws.com"
+    ]
+  },
+
   /**
    * If you have the "experimental: { appDir: true }" setting enabled, then you
    * must comment the below `i18n` config out.
